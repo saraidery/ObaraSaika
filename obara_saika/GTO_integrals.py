@@ -207,7 +207,7 @@ class KineticIntegralGTO(BaseIntegralGTO):
 
         if (a_q > 0):
            c_a_m = get_cartesian_index_accumulated(a-cart)
-           value += a_q * S[c_a_m, c_b] / (2.0 * self.alpha)
+           value -= self.beta/self.p *a_q * S[c_a_m, c_b]
 
         return value
 
@@ -223,7 +223,7 @@ class KineticIntegralGTO(BaseIntegralGTO):
 
         if (b_q > 0):
            c_b_m = get_cartesian_index_accumulated(b-cart)
-           value += b_q * S[c_a, c_b_m] / (2.0 * self.beta)
+           value -= self.alpha/self.p * b_q * S[c_a, c_b_m]
 
         return value
 
@@ -294,7 +294,7 @@ class KineticIntegralGTO(BaseIntegralGTO):
                             I[c_a, c_b] += self.overlap_a_recurrence(a, i, S, b)
                         if (np.sum(i) == np.sum(j)):
                             I[c_a, c_b] = self.do_recurrence(a, b+j, i, self.PA, I)
-                            I[c_a, c_b] += self.overlap_a_recurrence(a, i, S, b)
+                            I[c_a, c_b] += self.overlap_a_recurrence(a, i, S, b+j)
 
 
         extract_a = dim_a - get_n_cartesian(self.l_a)
