@@ -2,7 +2,7 @@ from obara_saika.angular_momentum import get_n_cartesian, get_cartesians, get_n_
 from obara_saika.GTO import GTO, PWGTO, ShellGTO, ShellPWGTO
 from obara_saika.basis_reader import QchemBasis
 from obara_saika.math import boys_kummer
-from obara_saika.GTO_integrals import OverlapIntegralGTO, NucAttIntegralGTO
+from obara_saika.GTO_integrals import OverlapIntegralGTO, NucAttIntegralGTO, KineticIntegralGTO
 from obara_saika.PWGTO_integrals import OverlapIntegralPWGTO, NucAttIntegralPWGTO
 
 __version__ = "0.1.0"
