@@ -38,13 +38,13 @@ def get_cartesian_index_accumulated(a):
     for l in np.arange(sum(a)):
         idx += get_n_cartesian(l)
 
-    idx += get_cartesian_index(l)
+    idx += get_cartesian_index(a)
 
     return idx
 
 def get_cartesians_accumulated(l):
     cart=[]
     for l_ in np.arange(l):
-        for a in get_cartesian_factors(l_):
+        for a in get_cartesians(l_):
             cart.append(a)
     return cart
