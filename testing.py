@@ -21,7 +21,7 @@ B[0] = 0.3
 B[2] = -0.25
 
 k_a = np.array([0.25, 0.50, 0.75])
-k_b = np.array([-0.30, 0.00, -0.60]) # OBS complex conj -> check all places
+k_b = np.array([-0.30, 0.00, -0.60])
 
 alpha = 0.8
 beta = 1.1
