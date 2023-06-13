@@ -1,9 +1,50 @@
 import numpy as np
 
+from obara_saika.angular_momentum import get_n_cartesian
+
+class ShellData:
+
+        def __init__(self, exp, coeff, l, center, start, stop):
+            self.exp = np.array(exp)
+            self.coeff = np.array(coeff)
+            self.l = l
+            self.center = np.array(center)
+            self.start = start
+            self.stop = stop
+
 class QchemBasis:
     def __init__(self, filename):
 
         self.n_shells, self.exponents, self.angular_momentum, self.coefficients, self.center_index, self.centers = self.read_qchem_basis(filename)
+        self._current_index = 0
+
+        self.sh_dim = 0
+        self.offsets = np.zeros(self.n_shells + 1, dtype=int)
+
+        for i, l in enumerate(self.angular_momentum):
+
+            self.offsets[i] = self.sh_dim
+            self.sh_dim += get_n_cartesian(l)
+
+        self.offsets[self.n_shells] = self.sh_dim
+
+
+    def __iter__(self):
+
+        n = 0
+        while n < self.n_shells:
+
+            center = self.centers[self.center_index[n]]
+            exp = self.exponents[n]
+            coeff = self.coefficients[n]
+            l = self.angular_momentum[n]
+            start = self.offsets[n]
+            stop = self.offsets[n + 1]
+
+            shell_data = ShellData(exp, coeff, l, center, start, stop)
+
+            n += 1
+            yield shell_data
 
     def read_qchem_basis(self, filename):
 

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import os
 
-from obara_saika import OverlapIntegralGTO, NucAttIntegralGTO, KineticIntegralGTO, QchemBasis
+from obara_saika import OverlapIntegralGTO, NucAttIntegralGTO, KineticIntegralGTO, QchemBasis, OverlapGTO, KineticGTO
 
 class TestGTO:
     def __overlap__(self, l_a, l_b, S_ref):
@@ -213,4 +213,44 @@ class TestGTO:
         assert np.allclose(l, l_ref)
         assert np.allclose(exponents.flatten(), exponents_ref.flatten())
         assert np.allclose(coefficients.flatten(), coefficients_ref.flatten())
+
+
+    def test_overlap_basis(self):
+
+        file_path = os.path.dirname(__file__)
+        file_name = os.path.join(file_path, "single_atom_sto3g.txt")
+        b = QchemBasis(file_name)
+
+        S = OverlapGTO(b)
+        I = S.get_overlap()
+
+        I_ref = np.array([[1.,         0.24278166, 0.,         0.,         0.,       ],
+                          [0.24278166, 1.,         0.,         0.,         0.,       ],
+                          [0.,         0.,         1.,         0.,         0.,       ],
+                          [0.,         0.,         0.,         1.,         0.,       ],
+                          [0.,         0.,         0.,         0.,         1.,       ],])
+
+
+        assert np.allclose(I, I_ref)
+
+
+    def test_kinetic_basis(self):
+
+        file_path = os.path.dirname(__file__)
+        file_name = os.path.join(file_path, "single_atom_sto3g.txt")
+        b = QchemBasis(file_name)
+
+        T = KineticGTO(b)
+        I = T.get_kinetic()
+
+        I_ref = np.array([[45.93487167, -0.2574199,   0.,          0.,          0.        ],
+                          [-0.2574199,   1.32403678,  0.,          0.,          0.        ],
+                          [ 0.,          0.,          4.14307308,  0.,          0.        ],
+                          [ 0.,          0.,          0.,          4.14307308,  0.        ],
+                          [ 0.,          0.,          0.,          0.,          4.14307308],])
+
+
+        assert np.allclose(I, I_ref)
+
+
 

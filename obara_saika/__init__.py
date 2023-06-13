@@ -4,5 +4,6 @@ from obara_saika.basis_reader import QchemBasis
 from obara_saika.math import boys_kummer
 from obara_saika.GTO_integrals import OverlapIntegralGTO, NucAttIntegralGTO, KineticIntegralGTO
 from obara_saika.PWGTO_integrals import OverlapIntegralPWGTO, NucAttIntegralPWGTO, KineticIntegralPWGTO
+from obara_saika.GTO_contracted import ContractedNucAttIntegralGTO, ContractedOverlapIntegralGTO, ContractedKineticIntegralGTO, OverlapGTO, KineticGTO, NucAttGTO
 
 __version__ = "0.1.0"
