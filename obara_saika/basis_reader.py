@@ -12,6 +12,12 @@ class ShellData:
             self.start = start
             self.stop = stop
 
+class PointCharge:
+
+    def __init__(self, center, charge):
+        self.center = center
+        self.charge = charge
+
 class QchemBasis:
     def __init__(self, filename):
 

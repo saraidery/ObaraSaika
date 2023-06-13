@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import os
 
-from obara_saika import OverlapIntegralGTO, NucAttIntegralGTO, KineticIntegralGTO, QchemBasis, OverlapGTO, KineticGTO
+from obara_saika import OverlapIntegralGTO, NucAttIntegralGTO, KineticIntegralGTO, QchemBasis, OverlapGTO, KineticGTO, NucAttGTO, PointCharge
 
 class TestGTO:
     def __overlap__(self, l_a, l_b, S_ref):
@@ -248,6 +248,27 @@ class TestGTO:
                           [ 0.,          0.,          4.14307308,  0.,          0.        ],
                           [ 0.,          0.,          0.,          4.14307308,  0.        ],
                           [ 0.,          0.,          0.,          0.,          4.14307308],])
+
+
+        assert np.allclose(I, I_ref)
+
+
+    def test_nuclear_attraction_basis(self):
+
+        file_path = os.path.dirname(__file__)
+        file_name = os.path.join(file_path, "single_atom_sto3g.txt")
+        b = QchemBasis(file_name)
+
+        pc = [PointCharge(np.array(b.centers[0]), 1.0)]
+
+        V = NucAttGTO(b, pc)
+        I = V.get_nuclear_attraction()
+
+        I_ref = np.array([[-9.53593255, -1.16012674,  0.,          0.,          0.,        ],
+                          [-1.16012674, -1.44830695,  0.,          0.,          0.,        ],
+                          [ 0.,          0.,         -1.43671274,  0.,          0.,        ],
+                          [ 0.,          0.,          0.,         -1.43671274,  0.,        ],
+                          [ 0.,          0.,          0.,          0.,         -1.43671274,],])
 
 
         assert np.allclose(I, I_ref)
