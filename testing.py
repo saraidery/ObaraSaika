@@ -26,15 +26,15 @@ k_b = np.array([-0.30, 0.00, -0.60]) # OBS complex conj -> check all places
 alpha = 0.8
 beta = 1.1
 
-#N = NucAttIntegralGTO(A, alpha, l_a, B, beta, l_b, C, Z)
-#print(N.integral())
+N = NucAttIntegralGTO(A, alpha, l_a, B, beta, l_b, C, Z)
+print(N.integral())
 
 #S = OverlapIntegralGTO(A, alpha, l_a, B, beta, l_b)
 #print(S.integral())
 
-K = KineticIntegralGTO(A, alpha, l_a, B, beta, l_b)
-I = K.integral()
-print(I)
+#K = KineticIntegralGTO(A, alpha, l_a, B, beta, l_b)
+#I = K.integral()
+#print(I)
 
 #cS = OverlapIntegralPWGTO(A, alpha, l_a, k_a, B, beta, l_b, k_b)
 #print(cS.integral())

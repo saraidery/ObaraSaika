@@ -19,8 +19,6 @@ class BaseIntegralGTO:
         cart_a = get_cartesians(self.l_a)
         cart_b = get_cartesians(self.l_b)
 
-        print(cart_b)
-
         for i, c_a in enumerate(cart_a):
             for j, c_b in enumerate(cart_b):
 
