@@ -3,6 +3,7 @@ import pytest
 import os
 
 from obara_saika import OverlapIntegralPWGTO, NucAttIntegralPWGTO, KineticIntegralPWGTO
+from obara_saika import QchemBasisPWGTO, OverlapPWGTO, KineticPWGTO, NucAttPWGTO, PointCharge
 
 class TestPWGTO:
 
@@ -329,3 +330,77 @@ class TestPWGTO:
                           [-0.0432116 -0.04869429j,  0.03403675+0.11998052j, -0.02424969-0.02329895j,
                             0.12765808-0.22478289j,  0.02339326+0.11232354j, -0.1105277 +0.01052904j,],])
         self.__kinetic__(2, 2, V_ref)
+
+
+
+
+    def test_overlap_basis(self):
+
+        file_path = os.path.dirname(__file__)
+        file_name = os.path.join(file_path, "single_atom_sto3g.txt")
+        k = np.array([1.000, 0.000, 0.000])
+        b = QchemBasisPWGTO(file_name, k)
+
+        S = OverlapPWGTO(b)
+        I = S.get_overlap()
+
+        I_ref = np.array([[1.+0j,         0.24278166+0j, 0.+0j,         0.+0j,         0.+0j,       ],
+                          [0.24278166+0j, 1.+0j,         0.+0j,         0.+0j,         0.+0j,       ],
+                          [0.+0j,         0.+0j,         1.+0j,         0.+0j,         0.+0j,       ],
+                          [0.+0j,         0.+0j,         0.+0j,         1.+0j,         0.+0j,       ],
+                          [0.+0j,         0.+0j,         0.+0j,         0.+0j,         1.+0j,       ],])
+
+
+        assert np.allclose(I, I_ref)
+
+
+    def test_kinetic_basis(self):
+
+        file_path = os.path.dirname(__file__)
+        file_name = os.path.join(file_path, "single_atom_sto3g.txt")
+        k = np.array([1.000, 0.000, 0.000])
+        b = QchemBasisPWGTO(file_name, k)
+
+        T = KineticPWGTO(b)
+        I = T.get_kinetic()
+
+        I_ref = np.array([[46.43487167+0.j,         -0.13602907+0.j,          0.        +1.29658953j,    0.        +0.j,          0.        +0.j,        ],
+                          [-0.13602907+0.j,          1.82403678+0.j,          0.        +0.83505184j,    0.        +0.j,          0.        +0.j,        ],
+                          [ 0.        -1.29658953j,  0.        -0.83505184j,  4.64307308+0.j,            0.        +0.j,          0.        +0.j,        ],
+                          [ 0.        +0.j,          0.        +0.j,          0.        +0.j,            4.64307308+0.j,          0.        +0.j,        ],
+                          [ 0.        +0.j,          0.        +0.j,          0.        +0.j,            0.        +0.j,          4.64307308+0.j,        ],])
+
+
+        assert np.allclose(I, I_ref)
+
+
+    def test_nuclear_attraction_basis(self):
+
+        file_path = os.path.dirname(__file__)
+        file_name = os.path.join(file_path, "single_atom_sto3g.txt")
+        k = np.array([1.000, 0.000, 0.000])
+        b = QchemBasisPWGTO(file_name, k)
+
+        pc = [PointCharge(np.array(b.centers[0]), 1.0)]
+
+        V = NucAttPWGTO(b, pc)
+        I = V.get_nuclear_attraction()
+
+        I_ref = np.array([[-9.53593255+0.00000000e+00j, -1.16012674+0.00000000e+00j,
+                            0.        -5.26999509e-18j,  0.        +0.00000000e+00j,
+                            0.        +0.00000000e+00j,],
+                          [-1.16012674+0.00000000e+00j, -1.44830695+0.00000000e+00j,
+                            0.        +0.00000000e+00j,  0.        +0.00000000e+00j,
+                            0.        +0.00000000e+00j,],
+                          [ 0.        +5.26999509e-18j,  0.        +0.00000000e+00j,
+                           -1.43671274+0.00000000e+00j,  0.        +0.00000000e+00j,
+                            0.        +0.00000000e+00j,],
+                          [ 0.        +0.00000000e+00j,  0.        +0.00000000e+00j,
+                            0.        +0.00000000e+00j, -1.43671274+0.00000000e+00j,
+                            0.        +0.00000000e+00j,],
+                          [ 0.        +0.00000000e+00j,  0.        +0.00000000e+00j,
+                            0.        +0.00000000e+00j,  0.        +0.00000000e+00j,
+                           -1.43671274+0.00000000e+00j,],])
+
+
+        assert np.allclose(I, I_ref)

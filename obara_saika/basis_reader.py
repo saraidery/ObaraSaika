@@ -4,13 +4,25 @@ from obara_saika.angular_momentum import get_n_cartesian
 
 class ShellData:
 
-        def __init__(self, exp, coeff, l, center, start, stop):
-            self.exp = np.array(exp)
-            self.coeff = np.array(coeff)
-            self.l = l
-            self.center = np.array(center)
-            self.start = start
-            self.stop = stop
+    def __init__(self, exp, coeff, l, center, start, stop):
+        self.exp = np.array(exp)
+        self.coeff = np.array(coeff)
+        self.l = l
+        self.center = np.array(center)
+        self.start = start
+        self.stop = stop
+
+
+class ShellDataPWGTO:
+
+    def __init__(self, exp, coeff, l, k, center, start, stop):
+        self.exp = np.array(exp)
+        self.coeff = np.array(coeff)
+        self.l = l
+        self.k = k
+        self.center = np.array(center)
+        self.start = start
+        self.stop = stop
 
 class PointCharge:
 
@@ -157,3 +169,31 @@ class QchemBasis:
                 for y in (range(l - x, -1, -1)):
                     n_ao += 1
         return n_ao
+
+
+class QchemBasisPWGTO(QchemBasis):
+
+    def __init__(self, filename, k):
+
+        super().__init__(filename)
+        self.k = k
+
+
+    def __iter__(self):
+
+        n = 0
+        while n < self.n_shells:
+
+            center = self.centers[self.center_index[n]]
+            exp = self.exponents[n]
+            coeff = self.coefficients[n]
+            l = self.angular_momentum[n]
+            k = self.k
+            start = self.offsets[n]
+            stop = self.offsets[n + 1]
+
+            shell_data = ShellDataPWGTO(exp, coeff, l, k, center, start, stop)
+
+            n += 1
+            yield shell_data
+

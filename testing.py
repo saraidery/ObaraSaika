@@ -1,20 +1,24 @@
 import numpy as np
 import os
 
-from obara_saika import QchemBasis, PointCharge
+from obara_saika import QchemBasis, PointCharge, QchemBasisPWGTO
 from obara_saika import OverlapIntegralGTO, NucAttIntegralGTO, KineticIntegralGTO
 from obara_saika import OverlapIntegralPWGTO, NucAttIntegralPWGTO, KineticIntegralPWGTO
 from obara_saika import OverlapGTO, KineticGTO, NucAttGTO
+from obara_saika import OverlapPWGTO, KineticPWGTO, NucAttPWGTO
 
 
 file_path = os.getcwd()
 print(file_path)
 file_name = os.path.join(file_path, "obara_saika/tests/single_atom_sto3g.txt")
-b = QchemBasis(file_name)
+
+k = np.array([1.000, 0.000, 0.000])
+
+b = QchemBasisPWGTO(file_name, k)
 
 pc = [PointCharge(np.array(b.centers[0]), 1.0)]
 
-S = NucAttGTO(b, pc)
+S = NucAttPWGTO(b, pc)
 I = S.get_nuclear_attraction()
 print(I)
 
