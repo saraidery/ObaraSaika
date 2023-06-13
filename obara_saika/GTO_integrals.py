@@ -280,7 +280,7 @@ class KineticIntegralGTO(BaseIntegralGTO):
         overlap = OverlapIntegralGTO(self.A, self.alpha, self.l_a + 1, self.B, self.beta, self.l_b + 1)
 
         S = np.zeros([get_n_cartesian_accumulated(self.l_a+1), get_n_cartesian_accumulated(self.l_b+1)])
-        overlap.integral_accumulated(S, PA, PB)
+        overlap.integral_accumulated(S, self.PA, self.PB)
 
         I = np.zeros([dim_a, dim_b])
 

@@ -114,6 +114,119 @@ class KineticIntegralPWGTO(KineticIntegralGTO, BaseIntegralPWGTO):
 
         return  tmp * S_00
 
+    def overlap_recurrence_sym(self, a, b, cart, S):
+
+        idx_cart = np.argmax(cart)
+        a_q = a[idx_cart]
+        b_q = b[idx_cart]
+
+        c_a = get_cartesian_index_accumulated(a)
+        c_a_p = get_cartesian_index_accumulated(a+cart)
+        c_b = get_cartesian_index_accumulated(b)
+        c_b_p = get_cartesian_index_accumulated(b+cart)
+
+        value = ((self.alpha * self.beta/self.p)*(S[c_a_p, c_b] + S[c_a, c_b_p])
+                - 1j * (self.alpha*self.k_b[idx_cart] + self.beta*self.k_a[idx_cart])/(2.0*self.p)*S[c_a, c_b])
+
+
+        if (a_q > 0):
+           c_a_m = get_cartesian_index_accumulated(a-cart)
+           value -= self.beta/(2.0*self.p) * a_q * S[c_a_m, c_b]
+
+        if (b_q > 0):
+           c_b_m = get_cartesian_index_accumulated(b-cart)
+           value -= self.alpha/(2.0*self.p) * b_q * S[c_a, c_b_m]
+
+        return value
+
+    def overlap_recurrence_non_sym(self, a, cart, S, b, beta, k_b):
+
+        idx_cart = np.argmax(cart)
+        a_q = a[idx_cart]
+        b_q = b[idx_cart]
+
+        c_a = get_cartesian_index_accumulated(a)
+        c_a_p = get_cartesian_index_accumulated(a+cart)
+        c_b = get_cartesian_index_accumulated(b)
+        c_b_p = get_cartesian_index_accumulated(b+cart)
+
+        value = (- beta * S[c_a, c_b_p]
+                + 1j * k_b[idx_cart]/2.0 * S[c_a, c_b])
+
+        if (b_q > 0):
+           c_b_m = get_cartesian_index_accumulated(b-cart)
+           value += b_q/2.0 * S[c_a, c_b_m]
+
+        return value
+
+    def integral_accumulated(self, I, PA, PB, S):
+
+        dim_a = get_n_cartesian_accumulated(self.l_a)
+        dim_b = get_n_cartesian_accumulated(self.l_b)
+
+        gto_s_P = GTO(self.p, np.real(self.P), np.array([0, 0, 0], dtype=int))
+
+        I[0, 0] = self.get_integral_over_s(S[0,0])
+
+        incr = [np.array([0, 0, 0], dtype=int),
+                np.array([1, 0, 0], dtype=int),
+                np.array([0, 1, 0], dtype=int),
+                np.array([0, 0, 1], dtype=int)]
+
+        if (self.l_a == 0):
+            for b in get_cartesians_accumulated(self.l_b-1):
+                for j in incr:
+                    if (sum(j) == 0):
+                        continue
+
+                    a = np.array([0, 0, 0], dtype=int)
+                    c_a = get_cartesian_index_accumulated(a)
+                    c_b = get_cartesian_index_accumulated(b + j)
+
+                    I[c_a, c_b] = self.do_recurrence(a, b, j, PB, I)
+                    I[c_a, c_b] += self.overlap_recurrence_sym(a, b, j, S)
+                    I[c_a, c_b] += self.overlap_recurrence_non_sym(b, j, S.T, a, self.alpha, self.k_a)
+
+        if (self.l_b == 0):
+            for a in get_cartesians_accumulated(self.l_a-1):
+                for i in incr:
+                    if (sum(i) == 0):
+                        continue
+
+                    b = np.array([0, 0, 0], dtype=int)
+                    c_a = get_cartesian_index_accumulated(a + i)
+                    c_b = get_cartesian_index_accumulated(b)
+
+                    I[c_a, c_b] = self.do_recurrence(a, b, i, PA, I)
+                    I[c_a, c_b] += self.overlap_recurrence_sym(a, b, i, S)
+                    I[c_a, c_b] += self.overlap_recurrence_non_sym(a, i, S, b, self.beta, self.k_b)
+
+        for a in get_cartesians_accumulated(self.l_a-1):
+            for b in get_cartesians_accumulated(self.l_b-1):
+
+                for i in incr:
+                    for j in incr:
+                        if (np.sum(i) + np.sum(j) == 0):
+                            continue
+
+                        c_a = get_cartesian_index_accumulated(a + i)
+                        c_b = get_cartesian_index_accumulated(b + j)
+
+                        if (np.sum(i) == 0):
+                            I[c_a, c_b] = self.do_recurrence(a, b, j, PB, I)
+                            I[c_a, c_b] += self.overlap_recurrence_sym(a, b, j, S)
+                            I[c_a, c_b] += self.overlap_recurrence_non_sym(b, j, S.T, a, self.alpha, self.k_a)
+                        if (np.sum(j) == 0):
+                            I[c_a, c_b] = self.do_recurrence(a, b, i, PA, I)
+                            I[c_a, c_b] += self.overlap_recurrence_sym(a, b, i, S)
+                            I[c_a, c_b] += self.overlap_recurrence_non_sym(a, i, S, b, self.beta, self.k_b)
+                        if (np.sum(i) == np.sum(j)):
+                            I[c_a, c_b] = self.do_recurrence(a, b+j, i, PA, I)
+                            I[c_a, c_b] += self.overlap_recurrence_sym(a, b+j, i, S)
+                            I[c_a, c_b] += self.overlap_recurrence_non_sym(a, i, S, b+j, self.beta, self.k_b)
+
+
+
     def integral(self):
 
         dim_a = get_n_cartesian_accumulated(self.l_a)
@@ -131,7 +244,6 @@ class KineticIntegralPWGTO(KineticIntegralGTO, BaseIntegralPWGTO):
 
         self.integral_accumulated(I, xi_A, xi_B, S)
 
-
         extract_a = dim_a - get_n_cartesian(self.l_a)
         extract_b = dim_b - get_n_cartesian(self.l_b)
 
@@ -139,5 +251,5 @@ class KineticIntegralPWGTO(KineticIntegralGTO, BaseIntegralPWGTO):
 
         normalization = self.normalization_array()
 
-        return np.multiply(S_shp, normalization)
+        return np.multiply(I_shp, normalization)
 
