@@ -1,6 +1,6 @@
 import numpy as np
 
-from obara_saika.angular_momentum import get_n_cartesian, get_cartesians, get_n_cartesian_accumulated, get_cartesian_index_accumulated, get_cartesians_accumulated
+from obara_saika.angular_momentum import get_n_cartesian, get_cartesians, get_n_cartesian_accumulated, get_cartesian_index_accumulated, get_cartesians_accumulated, get_cartesian_index
 from obara_saika.GTO import GTO, ShellGTO
 from obara_saika.math import boys_kummer
 
@@ -18,6 +18,8 @@ class BaseIntegralGTO:
 
         cart_a = get_cartesians(self.l_a)
         cart_b = get_cartesians(self.l_b)
+
+        print(cart_b)
 
         for i, c_a in enumerate(cart_a):
             for j, c_b in enumerate(cart_b):
@@ -85,14 +87,9 @@ class OverlapIntegralGTO(BaseIntegralGTO):
 
         return value
 
-    def integral_accumulated(self):
+    def integral_accumulated(self, I, PA, PB):
 
-        dim_a = get_n_cartesian_accumulated(self.l_a)
-        dim_b = get_n_cartesian_accumulated(self.l_b)
-
-        I = np.zeros([dim_a, dim_b])
-
-        gto_s_P = GTO(self.p, self.P, np.array([0, 0, 0], dtype=int))
+        gto_s_P = GTO(self.p, np.real(self.P), np.array([0, 0, 0], dtype=int))
 
         I[0, 0] = self.K*gto_s_P.GTO_s_overlap_3d()
 
@@ -102,7 +99,7 @@ class OverlapIntegralGTO(BaseIntegralGTO):
                 np.array([0, 0, 1], dtype=int)]
 
         if (self.l_a == 0):
-            for b in get_cartesians_accumulated(self.l_b):
+            for b in get_cartesians_accumulated(self.l_b-1):
                 for j in incr:
                     if (sum(j) == 0):
                         continue
@@ -111,10 +108,10 @@ class OverlapIntegralGTO(BaseIntegralGTO):
                     c_a = get_cartesian_index_accumulated(a)
                     c_b = get_cartesian_index_accumulated(b + j)
 
-                    I[c_a, c_b] = self.do_recurrence(a, b, j, self.PB, I)
+                    I[c_a, c_b] = self.do_recurrence(a, b, j, PB, I)
 
         if (self.l_b == 0):
-            for a in get_cartesians_accumulated(self.l_a):
+            for a in get_cartesians_accumulated(self.l_a-1):
                 for i in incr:
                     if (sum(i) == 0):
                         continue
@@ -123,10 +120,10 @@ class OverlapIntegralGTO(BaseIntegralGTO):
                     c_a = get_cartesian_index_accumulated(a + i)
                     c_b = get_cartesian_index_accumulated(b)
 
-                    I[c_a, c_b] = self.do_recurrence(a, b, i, self.PA, I)
+                    I[c_a, c_b] = self.do_recurrence(a, b, i, PA, I)
 
-        for a in get_cartesians_accumulated(self.l_a):
-            for b in get_cartesians_accumulated(self.l_b):
+        for a in get_cartesians_accumulated(self.l_a-1):
+            for b in get_cartesians_accumulated(self.l_b-1):
 
                 for i in incr:
                     for j in incr:
@@ -137,20 +134,20 @@ class OverlapIntegralGTO(BaseIntegralGTO):
                         c_b = get_cartesian_index_accumulated(b + j)
 
                         if (np.sum(i) == 0):
-                            I[c_a, c_b] = self.do_recurrence(a, b, j, self.PB, I)
+                            I[c_a, c_b] = self.do_recurrence(a, b, j, PB, I)
                         if (np.sum(j) == 0):
-                            I[c_a, c_b] = self.do_recurrence(a, b, i, self.PA, I)
+                            I[c_a, c_b] = self.do_recurrence(a, b, i, PA, I)
                         if (np.sum(i) == np.sum(j)):
-                            I[c_a, c_b] = self.do_recurrence(a, b+j, i, self.PA, I)
-
-        return I
+                            I[c_a, c_b] = self.do_recurrence(a, b+j, i, PA, I)
 
     def integral(self):
 
         dim_a = get_n_cartesian_accumulated(self.l_a)
         dim_b = get_n_cartesian_accumulated(self.l_b)
 
-        I = self.integral_accumulated()
+        I = np.zeros([dim_a, dim_b])
+
+        self.integral_accumulated(I, self.PA, self.PB)
 
         extract_a = dim_a - get_n_cartesian(self.l_a)
         extract_b = dim_b - get_n_cartesian(self.l_b)
@@ -195,7 +192,7 @@ class KineticIntegralGTO(BaseIntegralGTO):
 
         return value
 
-    def overlap_a_recurrence(self, a, cart, S, b):
+    def overlap_recurrence(self, a, cart, S, b):
 
         idx_cart = np.argmax(cart)
         a_q = a[idx_cart]
@@ -211,38 +208,26 @@ class KineticIntegralGTO(BaseIntegralGTO):
 
         return value
 
-    def overlap_b_recurrence(self, b, cart, S, a):
+    def get_integral_over_s(self, S_00):
 
-        idx_cart = np.argmax(cart)
-        b_q = b[idx_cart]
-
-        c_a = get_cartesian_index_accumulated(a)
-        c_b_p = get_cartesian_index_accumulated(b+cart)
-
-        value = 2.0*self.alpha*self.beta/self.p*S[c_a, c_b_p]
-
-        if (b_q > 0):
-           c_b_m = get_cartesian_index_accumulated(b-cart)
-           value -= self.alpha/self.p * b_q * S[c_a, c_b_m]
-
-        return value
-
+        AB = self.A - self.B
+        return  self.alpha*self.beta/self.p*(3.0 - 2.0 * (self.alpha*self.beta/self.p) * np.dot(AB,AB))*S_00
 
     def integral(self):
 
         dim_a = get_n_cartesian_accumulated(self.l_a)
         dim_b = get_n_cartesian_accumulated(self.l_b)
 
-        overlap = OverlapIntegralGTO(self.A, self.alpha, self.l_a, self.B, self.beta, self.l_b)
+        overlap = OverlapIntegralGTO(self.A, self.alpha, self.l_a + 1, self.B, self.beta, self.l_b + 1)
 
-        S = overlap.integral_accumulated()
+        S = np.zeros([get_n_cartesian_accumulated(self.l_a+1), get_n_cartesian_accumulated(self.l_b+1)])
+        overlap.integral_accumulated(S, self.PA, self.PB)
 
         I = np.zeros([dim_a, dim_b])
 
         gto_s_P = GTO(self.p, self.P, np.array([0, 0, 0], dtype=int))
 
-        AB = self.A - self.B
-        I[0, 0] = self.alpha*self.beta/self.p*(3.0 - 2.0 * (self.alpha*self.beta/self.p) * np.dot(AB,AB))*S[0, 0]
+        I[0, 0] = self.get_integral_over_s(S[0,0])
 
         incr = [np.array([0, 0, 0], dtype=int),
                 np.array([1, 0, 0], dtype=int),
@@ -250,7 +235,7 @@ class KineticIntegralGTO(BaseIntegralGTO):
                 np.array([0, 0, 1], dtype=int)]
 
         if (self.l_a == 0):
-            for b in get_cartesians_accumulated(self.l_b):
+            for b in get_cartesians_accumulated(self.l_b-1):
                 for j in incr:
                     if (sum(j) == 0):
                         continue
@@ -260,10 +245,10 @@ class KineticIntegralGTO(BaseIntegralGTO):
                     c_b = get_cartesian_index_accumulated(b + j)
 
                     I[c_a, c_b] = self.do_recurrence(a, b, j, self.PB, I)
-                    I[c_a, c_b] += self.overlap_b_recurrence(b, j, S, a)
+                    I[c_a, c_b] += self.overlap_recurrence(b, j, S.T, a)
 
         if (self.l_b == 0):
-            for a in get_cartesians_accumulated(self.l_a):
+            for a in get_cartesians_accumulated(self.l_a-1):
                 for i in incr:
                     if (sum(i) == 0):
                         continue
@@ -273,10 +258,10 @@ class KineticIntegralGTO(BaseIntegralGTO):
                     c_b = get_cartesian_index_accumulated(b)
 
                     I[c_a, c_b] = self.do_recurrence(a, b, i, self.PA, I)
-                    I[c_a, c_b] += self.overlap_a_recurrence(a, i, S, b)
+                    I[c_a, c_b] += self.overlap_recurrence(a, i, S, b)
 
-        for a in get_cartesians_accumulated(self.l_a):
-            for b in get_cartesians_accumulated(self.l_b):
+        for a in get_cartesians_accumulated(self.l_a-1):
+            for b in get_cartesians_accumulated(self.l_b-1):
 
                 for i in incr:
                     for j in incr:
@@ -288,13 +273,13 @@ class KineticIntegralGTO(BaseIntegralGTO):
 
                         if (np.sum(i) == 0):
                             I[c_a, c_b] = self.do_recurrence(a, b, j, self.PB, I)
-                            I[c_a, c_b] += self.overlap_b_recurrence(b, j, S, a)
+                            I[c_a, c_b] += self.overlap_recurrence(b, j, S.T, a)
                         if (np.sum(j) == 0):
                             I[c_a, c_b] = self.do_recurrence(a, b, i, self.PA, I)
-                            I[c_a, c_b] += self.overlap_a_recurrence(a, i, S, b)
+                            I[c_a, c_b] += self.overlap_recurrence(a, i, S, b)
                         if (np.sum(i) == np.sum(j)):
                             I[c_a, c_b] = self.do_recurrence(a, b+j, i, self.PA, I)
-                            I[c_a, c_b] += self.overlap_a_recurrence(a, i, S, b+j)
+                            I[c_a, c_b] += self.overlap_recurrence(a, i, S, b+j)
 
 
         extract_a = dim_a - get_n_cartesian(self.l_a)
@@ -305,8 +290,6 @@ class KineticIntegralGTO(BaseIntegralGTO):
         normalization = self.normalization_array()
 
         return np.multiply(S_shp, normalization)
-
-
 
 class NucAttIntegralGTO(BaseIntegralGTO):
 
@@ -349,16 +332,16 @@ class NucAttIntegralGTO(BaseIntegralGTO):
     def auxiliary_integral_s(self, m):
 
         U = self.p * np.dot(self.PC, self.PC)
-        gto_s_P = GTO(self.p, self.P, np.array([0, 0, 0], dtype=int))
+        gto_s_P = GTO(self.p, np.real(self.P), np.array([0, 0, 0], dtype=int))
 
         return self.K * 2.0 * pow(self.p / np.pi, 0.5) * gto_s_P.GTO_s_overlap_3d() * boys_kummer(m, U)
 
-    def integral(self):
+
+    def integral_accumulated(self, aux, PA, PB):
+
 
         dim_a = get_n_cartesian_accumulated(self.l_a)
         dim_b = get_n_cartesian_accumulated(self.l_b)
-
-        aux = np.zeros([dim_a, dim_b, dim_a + dim_b + 1])
 
         for i in np.arange(dim_a + dim_b + 1):
             aux[0, 0, i] = self.auxiliary_integral_s(i)
@@ -369,7 +352,7 @@ class NucAttIntegralGTO(BaseIntegralGTO):
                 np.array([0, 0, 1], dtype=int)]
 
         if (self.l_a == 0):
-            for b in get_cartesians_accumulated(self.l_b):
+            for b in get_cartesians_accumulated(self.l_b-1):
                 for j in incr:
                     if (sum(j) == 0):
                         continue
@@ -379,10 +362,10 @@ class NucAttIntegralGTO(BaseIntegralGTO):
                     c_b = get_cartesian_index_accumulated(b + j)
 
                     for m in np.arange(self.l_b + self.l_a + 1 - sum(a) - sum(b)):
-                        aux[c_a, c_b, m] = self.do_recurrence(a, b, j, self.PB, aux, m)
+                        aux[c_a, c_b, m] = self.do_recurrence(a, b, j, PB, aux, m)
 
         if (self.l_b == 0):
-            for a in get_cartesians_accumulated(self.l_a):
+            for a in get_cartesians_accumulated(self.l_a-1):
                 for i in incr:
                     if (sum(i) == 0):
                         continue
@@ -392,10 +375,10 @@ class NucAttIntegralGTO(BaseIntegralGTO):
                     c_b = get_cartesian_index_accumulated(b)
 
                     for m in np.arange(self.l_b + self.l_a + 1 - sum(a) - sum(b)):
-                        aux[c_a, c_b, m] = self.do_recurrence(a, b, i, self.PA, aux, m)
+                        aux[c_a, c_b, m] = self.do_recurrence(a, b, i, PA, aux, m)
 
-        for a in get_cartesians_accumulated(self.l_a):
-            for b in get_cartesians_accumulated(self.l_b):
+        for a in get_cartesians_accumulated(self.l_a-1):
+            for b in get_cartesians_accumulated(self.l_b-1):
 
                 for i in incr:
                     for j in incr:
@@ -407,11 +390,20 @@ class NucAttIntegralGTO(BaseIntegralGTO):
 
                         for m in np.arange(self.l_b + self.l_a + 1 - sum(a) - sum(b)):
                             if (np.sum(i) == 0):
-                                aux[c_a, c_b, m] = self.do_recurrence(a, b, j, self.PB, aux, m)
+                                aux[c_a, c_b, m] = self.do_recurrence(a, b, j, PB, aux, m)
                             if (np.sum(j) == 0):
-                                aux[c_a, c_b, m] = self.do_recurrence(a, b, i, self.PA, aux, m)
+                                aux[c_a, c_b, m] = self.do_recurrence(a, b, i, PA, aux, m)
                             if (np.sum(i) == np.sum(j)):
-                                aux[c_a, c_b, m] = self.do_recurrence(a, b+j, i, self.PA, aux, m)
+                                aux[c_a, c_b, m] = self.do_recurrence(a, b+j, i, PA, aux, m)
+
+    def integral(self):
+
+        dim_a = get_n_cartesian_accumulated(self.l_a)
+        dim_b = get_n_cartesian_accumulated(self.l_b)
+
+        aux = np.zeros([dim_a, dim_b, dim_a + dim_b + 1])
+
+        self.integral_accumulated(aux, self.PA, self.PB)
 
         extract_a = dim_a - get_n_cartesian(self.l_a)
         extract_b = dim_b - get_n_cartesian(self.l_b)

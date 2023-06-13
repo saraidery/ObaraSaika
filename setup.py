@@ -13,7 +13,7 @@ extra_requirements = {
 }
 
 setup(
-    name="obara-saika-debug",
+    name="obara_saika",
     author="Sarai D. Folkestad",
     description="Code to debug integrals",
     install_requires=["numpy", "scipy", "mpmath"],

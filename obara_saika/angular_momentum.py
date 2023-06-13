@@ -44,7 +44,8 @@ def get_cartesian_index_accumulated(a):
 
 def get_cartesians_accumulated(l):
     cart=[]
-    for l_ in np.arange(l):
+    for l_ in np.arange(l+1):
         for a in get_cartesians(l_):
             cart.append(a)
+
     return cart
