@@ -2,15 +2,15 @@ import numpy as np
 
 
 from obara_saika import OverlapIntegralGTO, NucAttIntegralGTO, KineticIntegralGTO
-from obara_saika import OverlapIntegralPWGTO, NucAttIntegralPWGTO
+from obara_saika import OverlapIntegralPWGTO, NucAttIntegralPWGTO, KineticIntegralPWGTO
 
 A = np.zeros(3)
 B = np.zeros(3)
 C = np.zeros(3)
 C[0] = 1.0
 
-l_a = 2
-l_b = 2
+l_a = 0
+l_b = 0
 
 Z = 1.0
 
@@ -26,8 +26,8 @@ k_b = np.array([-0.30, 0.00, -0.60])
 alpha = 0.8
 beta = 1.1
 
-N = NucAttIntegralGTO(A, alpha, l_a, B, beta, l_b, C, Z)
-print(N.integral())
+#N = NucAttIntegralGTO(A, alpha, l_a, B, beta, l_b, C, Z)
+#print(N.integral())
 
 #S = OverlapIntegralGTO(A, alpha, l_a, B, beta, l_b)
 #print(S.integral())
@@ -35,6 +35,10 @@ print(N.integral())
 #K = KineticIntegralGTO(A, alpha, l_a, B, beta, l_b)
 #I = K.integral()
 #print(I)
+
+cK = KineticIntegralPWGTO(A, alpha, l_a, k_a, B, beta, l_b, k_b)
+I = cK.integral()
+print(I)
 
 #cS = OverlapIntegralPWGTO(A, alpha, l_a, k_a, B, beta, l_b, k_b)
 #print(cS.integral())

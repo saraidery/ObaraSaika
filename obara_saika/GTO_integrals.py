@@ -4,7 +4,6 @@ from obara_saika.angular_momentum import get_n_cartesian, get_cartesians, get_n_
 from obara_saika.GTO import GTO, ShellGTO
 from obara_saika.math import boys_kummer
 
-
 import numpy as np
 
 class BaseIntegralGTO:
@@ -211,15 +210,10 @@ class KineticIntegralGTO(BaseIntegralGTO):
         AB = self.A - self.B
         return  self.alpha*self.beta/self.p*(3.0 - 2.0 * (self.alpha*self.beta/self.p) * np.dot(AB,AB))*S_00
 
-    def integral_accumulated(self, I, PA, PB):
+    def integral_accumulated(self, I, PA, PB, S):
 
         dim_a = get_n_cartesian_accumulated(self.l_a)
         dim_b = get_n_cartesian_accumulated(self.l_b)
-
-        overlap = OverlapIntegralGTO(self.A, self.alpha, self.l_a + 1, self.B, self.beta, self.l_b + 1)
-
-        S = np.zeros([get_n_cartesian_accumulated(self.l_a+1), get_n_cartesian_accumulated(self.l_b+1)])
-        overlap.integral_accumulated(S, PA, PB)
 
         gto_s_P = GTO(self.p, np.real(self.P), np.array([0, 0, 0], dtype=int))
 
@@ -283,9 +277,14 @@ class KineticIntegralGTO(BaseIntegralGTO):
         dim_a = get_n_cartesian_accumulated(self.l_a)
         dim_b = get_n_cartesian_accumulated(self.l_b)
 
+        overlap = OverlapIntegralGTO(self.A, self.alpha, self.l_a + 1, self.B, self.beta, self.l_b + 1)
+
+        S = np.zeros([get_n_cartesian_accumulated(self.l_a+1), get_n_cartesian_accumulated(self.l_b+1)])
+        overlap.integral_accumulated(S, PA, PB)
+
         I = np.zeros([dim_a, dim_b])
 
-        self.integral_accumulated(I, self.PA, self.PB)
+        self.integral_accumulated(I, self.PA, self.PB, S)
 
         extract_a = dim_a - get_n_cartesian(self.l_a)
         extract_b = dim_b - get_n_cartesian(self.l_b)
