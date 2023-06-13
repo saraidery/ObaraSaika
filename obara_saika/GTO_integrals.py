@@ -29,6 +29,7 @@ class BaseIntegralGTO:
                 normalization[i, j] =( gto_A.normalization_3d()
                                         * gto_B.normalization_3d())
 
+        print(normalization)
         return normalization
 
     @property
@@ -192,7 +193,7 @@ class KineticIntegralGTO(BaseIntegralGTO):
 
         return value
 
-    def overlap_recurrence(self, a, cart, S, b):
+    def overlap_recurrence(self, a, cart, S, b, beta):
 
         idx_cart = np.argmax(cart)
         a_q = a[idx_cart]
@@ -204,7 +205,7 @@ class KineticIntegralGTO(BaseIntegralGTO):
 
         if (a_q > 0):
            c_a_m = get_cartesian_index_accumulated(a-cart)
-           value -= self.beta/self.p *a_q * S[c_a_m, c_b]
+           value -= beta/self.p *a_q * S[c_a_m, c_b]
 
         return value
 
@@ -245,7 +246,7 @@ class KineticIntegralGTO(BaseIntegralGTO):
                     c_b = get_cartesian_index_accumulated(b + j)
 
                     I[c_a, c_b] = self.do_recurrence(a, b, j, self.PB, I)
-                    I[c_a, c_b] += self.overlap_recurrence(b, j, S.T, a)
+                    I[c_a, c_b] += self.overlap_recurrence(b, j, S.T, a, self.alpha)
 
         if (self.l_b == 0):
             for a in get_cartesians_accumulated(self.l_a-1):
@@ -258,7 +259,7 @@ class KineticIntegralGTO(BaseIntegralGTO):
                     c_b = get_cartesian_index_accumulated(b)
 
                     I[c_a, c_b] = self.do_recurrence(a, b, i, self.PA, I)
-                    I[c_a, c_b] += self.overlap_recurrence(a, i, S, b)
+                    I[c_a, c_b] += self.overlap_recurrence(a, i, S, b, self.beta)
 
         for a in get_cartesians_accumulated(self.l_a-1):
             for b in get_cartesians_accumulated(self.l_b-1):
@@ -273,13 +274,13 @@ class KineticIntegralGTO(BaseIntegralGTO):
 
                         if (np.sum(i) == 0):
                             I[c_a, c_b] = self.do_recurrence(a, b, j, self.PB, I)
-                            I[c_a, c_b] += self.overlap_recurrence(b, j, S.T, a)
+                            I[c_a, c_b] += self.overlap_recurrence_b(b, j, S.T, a, self.alpha)
                         if (np.sum(j) == 0):
                             I[c_a, c_b] = self.do_recurrence(a, b, i, self.PA, I)
-                            I[c_a, c_b] += self.overlap_recurrence(a, i, S, b)
+                            I[c_a, c_b] += self.overlap_recurrence_a(a, i, S, b, self.beta)
                         if (np.sum(i) == np.sum(j)):
                             I[c_a, c_b] = self.do_recurrence(a, b+j, i, self.PA, I)
-                            I[c_a, c_b] += self.overlap_recurrence(a, i, S, b+j)
+                            I[c_a, c_b] += self.overlap_recurrence_a(a, i, S, b+j, self.beta)
 
 
         extract_a = dim_a - get_n_cartesian(self.l_a)
