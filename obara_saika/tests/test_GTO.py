@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import os
 
-from obara_saika import OverlapIntegralGTO, NucAttIntegralGTO, KineticIntegralGTO
+from obara_saika import OverlapIntegralGTO, NucAttIntegralGTO, KineticIntegralGTO, QchemBasis
 
 class TestGTO:
     def __overlap__(self, l_a, l_b, S_ref):
@@ -186,3 +186,31 @@ class TestGTO:
                           [ 0.2124924 , -0.08613901, -0.01250572,  0.10917864, -0.0092286,  -0.06688698],
                           [ 0.02336906, -0.11189559,  0.04779726,  0.26563013, -0.19118903, -0.11966924],])
         self.__kinetic__(2, 2, S_ref)
+
+
+    def test_read_basis(self):
+
+        file_path = os.path.dirname(__file__)
+        file_name = os.path.join(file_path, "single_atom_sto3g.txt")
+        b = QchemBasis(file_name)
+
+        assert b.n_aos == 5
+        assert b.n_shells == 3
+
+        centers = np.array(b.centers)
+        centers_ref = np.array([0.0, 0.0, 0.0])
+
+        l = np.array(b.angular_momentum)
+        l_ref = np.array([0, 0, 1], dtype=int)
+
+        exponents = np.array(b.exponents)
+        exponents_ref = np.array([2.07015610000000e+02, 3.77081510000000e+01, 1.02052970000000e+01, 8.24631510000000e+00, 1.91626620000000e+00, 6.23229300000000e-01, 8.24631510000000e+00, 1.91626620000000e+00, 6.23229300000000e-01])
+
+        coefficients = np.array(b.coefficients)
+        coefficients_ref = np.array([6.00288292416504e+00, 5.80572680555135e+00, 1.80939142283201e+00,-3.46707063475341e-01, 4.63748691732151e-01, 3.49998076979097e-01, 3.10567802836512e+00, 1.95293364225592e+00, 3.09377532603190e-01])
+
+        assert np.allclose(centers, centers_ref)
+        assert np.allclose(l, l_ref)
+        assert np.allclose(exponents.flatten(), exponents_ref.flatten())
+        assert np.allclose(coefficients.flatten(), coefficients_ref.flatten())
+

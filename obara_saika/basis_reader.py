@@ -99,6 +99,7 @@ class QchemBasis:
 
         return n_shells, exponents_expanded, angular_momentum, coefficients_expanded, center_index, centers
 
+    @property
     def n_aos(self):
 
         n_ao = 0
