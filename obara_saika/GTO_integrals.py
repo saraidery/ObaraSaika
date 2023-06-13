@@ -29,7 +29,6 @@ class BaseIntegralGTO:
                 normalization[i, j] =( gto_A.normalization_3d()
                                         * gto_B.normalization_3d())
 
-        print(normalization)
         return normalization
 
     @property
@@ -274,13 +273,13 @@ class KineticIntegralGTO(BaseIntegralGTO):
 
                         if (np.sum(i) == 0):
                             I[c_a, c_b] = self.do_recurrence(a, b, j, self.PB, I)
-                            I[c_a, c_b] += self.overlap_recurrence_b(b, j, S.T, a, self.alpha)
+                            I[c_a, c_b] += self.overlap_recurrence(b, j, S.T, a, self.alpha)
                         if (np.sum(j) == 0):
                             I[c_a, c_b] = self.do_recurrence(a, b, i, self.PA, I)
-                            I[c_a, c_b] += self.overlap_recurrence_a(a, i, S, b, self.beta)
+                            I[c_a, c_b] += self.overlap_recurrence(a, i, S, b, self.beta)
                         if (np.sum(i) == np.sum(j)):
                             I[c_a, c_b] = self.do_recurrence(a, b+j, i, self.PA, I)
-                            I[c_a, c_b] += self.overlap_recurrence_a(a, i, S, b+j, self.beta)
+                            I[c_a, c_b] += self.overlap_recurrence(a, i, S, b+j, self.beta)
 
 
         extract_a = dim_a - get_n_cartesian(self.l_a)

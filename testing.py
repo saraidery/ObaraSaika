@@ -9,7 +9,7 @@ B = np.zeros(3)
 C = np.zeros(3)
 C[0] = 1.0
 
-l_a = 0
+l_a = 2
 l_b = 2
 
 Z = 1.0
