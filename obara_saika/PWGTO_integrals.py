@@ -5,8 +5,7 @@ from obara_saika.GTO import GTO, PWGTO, ShellPWGTO
 from obara_saika.math import boys_kummer
 from obara_saika.GTO_integrals import BaseIntegralGTO, OverlapIntegralGTO, NucAttIntegralGTO
 
-
-class OverlapIntegralPWGTO(OverlapIntegralGTO):
+class BaseIntegralPWGTO:
 
     @property
     def k_a(self):
@@ -15,6 +14,13 @@ class OverlapIntegralPWGTO(OverlapIntegralGTO):
     @property
     def k_b(self):
         return self.sh_B.k
+
+    def make_xi(self, PX, k, x):
+
+        return PX + 1j * k/(2.0*x)
+
+class OverlapIntegralPWGTO(OverlapIntegralGTO, BaseIntegralPWGTO):
+
 
     def __init__(self, A, alpha, l_a, k_a, B, beta, l_b, k_b):
 
@@ -25,10 +31,6 @@ class OverlapIntegralPWGTO(OverlapIntegralGTO):
 
         self.PA = self.P - self.Ad
         self.PB = self.P - self.Bd
-
-    def make_xi(self, PX, k, x):
-
-        return PX + 1j * k/(2.0*x)
 
     def integral(self):
 
@@ -51,15 +53,7 @@ class OverlapIntegralPWGTO(OverlapIntegralGTO):
 
         return np.multiply(S_shp, normalization)
 
-class NucAttIntegralPWGTO(NucAttIntegralGTO):
-
-    @property
-    def k_a(self):
-        return self.sh_A.k
-
-    @property
-    def k_b(self):
-        return self.sh_B.k
+class NucAttIntegralPWGTO(NucAttIntegralGTO, BaseIntegralPWGTO):
 
 
     def __init__(self, A, alpha, l_a, k_a, B, beta, l_b, k_b, C, Z):
@@ -74,10 +68,6 @@ class NucAttIntegralPWGTO(NucAttIntegralGTO):
         self.PA = self.P - self.Ad
         self.PB = self.P - self.Bd
         self.PC = self.P - self.C
-
-    def make_xi(self, PX, k, x):
-
-        return PX + 1j * k/(2.0*x)
 
     def integral(self):
 
