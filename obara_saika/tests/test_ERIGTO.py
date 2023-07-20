@@ -52,7 +52,6 @@ class TestERIGTO:
                             0.10379149,  0.02591431, -0.31736481])
         self.__eri__(1, 0, 0, 1, eri_ref)
 
-
     def test_eri_dsss(self):
         eri_ref = np.array([ 0.56040121,-0.24125529,-0.15144698, 1.44624257, 0.95589778, 0.88041593])
         self.__eri__(2, 0, 0, 0, eri_ref)

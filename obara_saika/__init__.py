@@ -6,5 +6,6 @@ from obara_saika.GTO_integrals import OverlapIntegralGTO, NucAttIntegralGTO, Kin
 from obara_saika.PWGTO_integrals import OverlapIntegralPWGTO, NucAttIntegralPWGTO, KineticIntegralPWGTO
 from obara_saika.GTO_contracted import ContractedNucAttIntegralGTO, ContractedOverlapIntegralGTO, ContractedKineticIntegralGTO, OverlapGTO, KineticGTO, NucAttGTO
 from obara_saika.PWGTO_contracted import ContractedNucAttIntegralPWGTO, ContractedOverlapIntegralPWGTO, ContractedKineticIntegralPWGTO, OverlapPWGTO, KineticPWGTO, NucAttPWGTO
+from obara_saika.GTO_ERI import ERIGTO
 
 __version__ = "0.1.0"
