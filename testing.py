@@ -23,9 +23,9 @@ beta = 1.2
 gamma = 1.1
 delta = 0.5
 
-l_a = 1
-l_b = 1
-l_c = 1
+l_a = 2
+l_b = 0
+l_c = 0
 l_d = 1
 
 eris = ERIGTO(A, alpha, l_a, B, beta, l_b, C, gamma, l_c, D, delta, l_d)

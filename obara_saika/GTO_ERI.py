@@ -224,18 +224,14 @@ class ERIGTO:
                                         c_c = get_cartesian_index_accumulated(c + k)
                                         c_d = get_cartesian_index_accumulated(d + l)
 
-                                        for m in np.arange(self.l_b + self.l_a + self.l_c + self.l_d - sum(a) - sum(b) - sum(c) - sum(d)): # IS THIS CORRECT?
+                                        for m in np.arange(self.l_b + self.l_a + self.l_c + self.l_d - sum(a) - sum(b) - sum(c) - sum(d)):
                                             if (sum(l) > 0):
-                                                print("increment d")
                                                 aux[c_a, c_b, c_c, c_d, m] = self.do_recurrence_ket(a + i, b + j, c + k, d, l, self.QD, self.WQ, aux, m)
                                             elif (sum(k) > 0):
-                                                print("increment c")
                                                 aux[c_a, c_b, c_c, c_d, m] = self.do_recurrence_ket(a + i, b + j, c, d + l, k, self.QC, self.WQ, aux, m)
                                             elif (sum(j) > 0):
-                                                print("increment b")
                                                 aux[c_a, c_b, c_c, c_d, m] = self.do_recurrence_bra(a + i, b, c + k, d + l, j, self.PB, self.WP, aux, m)
                                             elif (sum(i) > 0):
-                                                print("increment a")
                                                 aux[c_a, c_b, c_c, c_d, m] = self.do_recurrence_bra(a, b + j, c + k, d + l, i, self.PA, self.WP, aux, m)
 
 
